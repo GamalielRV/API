@@ -12,13 +12,18 @@ $input = file_get_contents('php://input');
 $data = json_decode($input, true);
 
 
-function InsertarFuncionario($data ){
+function InsertarFuncionario($data)
+{
+  //var_dump($data);
+ // echo $data["dni_funcionario"];
+ // exit();
 
   $consultaFuncionario = new ConsultaFuncionario();
 
   $funcionario = $consultaFuncionario->buscarFuncionario($data["dni_funcionario"]);
 
-  if($funcionario == null){
+
+  if ($funcionario == null) {
     // debo insertar el funcionario
     $registro = new Funcionario(
       $data["dni_funcionario"],
@@ -27,16 +32,14 @@ function InsertarFuncionario($data ){
     );
     $id_funcionario = $consultaFuncionario->insertarFuncionario($registro);
     return $id_funcionario;
-  }else{
-    return $funcionario["id_funcionario"];
-  
+  } else {
+    return $funcionario->id_funcionario;
   }
-  
 }
 
 
 if (isset($_GET["consulta"])) {
-  
+
   $consultaActivo = new ConsultaActivo();
   $consultaFuncionario = new ConsultaFuncionario();
 
@@ -45,8 +48,8 @@ if (isset($_GET["consulta"])) {
 
     case 1: //listar
 
-        //Ejecucion de procedimiento
-        $consultaActivo->listarActivos();
+      //Ejecucion de procedimiento
+      $consultaActivo->listarActivos();
 
       break;
 
@@ -54,59 +57,68 @@ if (isset($_GET["consulta"])) {
 
       //revisar que data traiga datos y que exista!
 
-      if ( isset($data) && !empty($data)){
-        
+      if (isset($data) && !empty($data)) {
+
 
         //recorrer el array de objetos para la insersion de activos
+        $indice = 0;
         foreach ($data as $key => $value) {
-        //*Ejecucion de procedimiento en caso de que todos los funcionarios esten registrados no hace nada,
-        //* en caso de que no esten registrados los inserta
-        $id_funcionario = InsertarFuncionario($data);
+          //*Ejecucion de procedimiento en caso de que todos los funcionarios esten registrados no hace nada,
+          //* en caso de que no esten registrados los inserta
+          $id_funcionario = InsertarFuncionario($data[$indice]);
 
-          
-        // $consulta activo = va y busca por etiqueta
+          // $consulta activo = va y busca por etiqueta
           $activo_por_etiqueta = $consultaActivo->buscarActivo($value["n_etiqueta"]);
-          
-          if($activo_por_etiqueta ==  ""){
-            
+
+          if ($activo_por_etiqueta ==  "") {
+
             //inserta activo
-            $activo = new Activo( $value["n_etiqueta"], $value["marca"],$value["modelo"],$value["serie"],
-            $value["descripcion"],"", "",$value["valor_libros"],$value["condicion"],$value["clase_activo"],$id_funcionario,$value['nombre_funcionario'] );
-                    
-           $consultaActivo->insertarActivo($activo);
+            $activo = new Activo(
+              $value["n_etiqueta"],
+              $value["marca"],
+              $value["modelo"],
+              $value["serie"],
+              $value["descripcion"],
+              "",
+              "",
+              $value["valor_libros"],
+              $value["condicion"],
+              $value["clase_activo"],
+              $id_funcionario,
+              $value['nombre_funcionario']
+            );
 
+            $consultaActivo->insertarActivo($activo);
           }
-
+          $indice++;
         }
-
       } else {
         // respuesta si no envia parametros
-       // $json["n_etiqueta"] = $data["n_etiqueta"];
+        // $json["n_etiqueta"] = $data["n_etiqueta"];
         $json["mensaje"] = "Error una o varias entradas estan vacias!";
         echo json_encode($json);
-        
       }
 
       break;
 
     case 3: //editar
 
-      if (isset($data["n_etiqueta"]) && !empty($data["n_etiqueta"])
-      && isset($data["marca"]) && !empty($data["marca"]) 
-      && isset($data["modelo"]) && !empty($data["modelo"])
-      && isset($data["serie"]) && !empty($data["serie"])
-      && isset($data["descripcion"]) && !empty($data["descripcion"])
-      && isset($data["id_ubicacion"]) && !empty($data["id_ubicacion"])
-      && isset($data["valor_libro"]) && !empty($data["valor_libro"])
-      && isset($data["condicion"]) && !empty($data["condicion"])
-      && isset($data["clase_activo"]) && !empty($data["clase_activo"])
-      && isset($data["id_funcionario"]) && !empty($data["id_funcionario"])
+      if (
+        isset($data["n_etiqueta"]) && !empty($data["n_etiqueta"])
+        && isset($data["marca"]) && !empty($data["marca"])
+        && isset($data["modelo"]) && !empty($data["modelo"])
+        && isset($data["serie"]) && !empty($data["serie"])
+        && isset($data["descripcion"]) && !empty($data["descripcion"])
+        && isset($data["id_ubicacion"]) && !empty($data["id_ubicacion"])
+        && isset($data["valor_libro"]) && !empty($data["valor_libro"])
+        && isset($data["condicion"]) && !empty($data["condicion"])
+        && isset($data["clase_activo"]) && !empty($data["clase_activo"])
+        && isset($data["id_funcionario"]) && !empty($data["id_funcionario"])
       ) {
         //Ejecucion de procedimiento
-        $activo = new Activo( $data["n_etiqueta"], $data["marca"],$data["modelo"],$data["serie"],$data["descripcion"],$data["id_ubicacion"], "",$data["valor_libro"],$data["condicion"],$data["clase_activo"],$data["id_funcionario"], "");
-        
+        $activo = new Activo($data["n_etiqueta"], $data["marca"], $data["modelo"], $data["serie"], $data["descripcion"], $data["id_ubicacion"], "", $data["valor_libro"], $data["condicion"], $data["clase_activo"], $data["id_funcionario"], "");
+
         $consultaActivo->actualizarActivo($activo);
-        
       } else {
         // respuesta si no envia parametros
         $json["n_etiqueta"] = $data["n_etiqueta"];
@@ -119,10 +131,9 @@ if (isset($_GET["consulta"])) {
         $json["condicion"] = $data["condicion"];
         $json["clase_activo"] = $data["clase_activo"];
         $json["id_funcionario"] = $data["id_funcionario"];
-        
+
         $json["mensaje"] = "Error una o varias entradas estan vacias!";
         echo json_encode($json);
-        
       }
 
       break;
@@ -130,20 +141,17 @@ if (isset($_GET["consulta"])) {
     case 4: //eliminar
 
 
-      if (isset($data["n_etiqueta"]) && !empty($data["n_etiqueta"]) ) {
+      if (isset($data["n_etiqueta"]) && !empty($data["n_etiqueta"])) {
         //Ejecucion de procedimiento
         $consultaActivo->eliminarActivo($data["n_etiqueta"]);
-        
       } else {
         // respuesta si no envia parametros
         $json["n_etiqueta"] = $data["n_etiqueta"];
         $json["mensaje"] = "Error una o varias entradas estan vacias!";
         echo json_encode($json);
-        
       }
-      
-      break;
 
+      break;
   }
 } else {
 
