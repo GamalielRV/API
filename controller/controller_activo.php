@@ -14,9 +14,6 @@ $data = json_decode($input, true);
 
 function InsertarFuncionario($data)
 {
-  //var_dump($data);
- // echo $data["dni_funcionario"];
- // exit();
 
   $consultaFuncionario = new ConsultaFuncionario();
 
@@ -79,7 +76,7 @@ if (isset($_GET["consulta"])) {
               $value["modelo"],
               $value["serie"],
               $value["descripcion"],
-              "",
+              1,
               "",
               $value["valor_libros"],
               $value["condicion"],
