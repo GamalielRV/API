@@ -78,7 +78,7 @@ if (isset($_GET["consulta"])) {
               $value["descripcion"],
               1,
               "",
-              $value["valor_libros"],
+              $value["valor_libro"],
               $value["condicion"],
               $value["clase_activo"],
               $id_funcionario,
